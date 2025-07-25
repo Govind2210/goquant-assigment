@@ -5,6 +5,12 @@ import SpreadIndicator from "@/components/SpreadIndicator";
 import OrderbookDisplay from "@/components/OrderbookDisplay";
 import TradingPairSelector from "@/components/TradingPairSelector";
 
+// Define OrderbookSnapshot type for orderbookHistory state
+type OrderbookSnapshot = {
+  bids: [string, string][];
+  asks: [string, string][];
+};
+
 type OrderbookEntry = [string, string];
 
 type OrderbookData = {
@@ -38,7 +44,7 @@ const Home = () => {
   const [spreadLabels, setSpreadLabels] = useState<string[]>([]);
   // const [orderbookData, setOrderbookData] = useState<any[] | null>([]);
   const [selectedPair, setSelectedPair] = useState<string>("BTCUSDT");
-  const [orderbookHistory, setOrderbookHistory] = useState<any[]>([]);
+  const [orderbookHistory, setOrderbookHistory] = useState<OrderbookSnapshot[]>([]);
 
   // Fetch the orderbook data
   const fetchOrderbookHandler = async () => {

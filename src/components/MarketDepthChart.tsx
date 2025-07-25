@@ -27,7 +27,19 @@ type MarketDepthChartProps = {
 };
 
 const MarketDepthChart: React.FC<MarketDepthChartProps> = ({ orderbookData }) => {
-  const [chartData, setChartData] = useState<any>(null);
+  type ChartData = {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: (number | null)[];
+      borderColor: string;
+      borderWidth: number;
+      pointRadius: number;
+      fill: boolean;
+    }[];
+  };
+  
+  const [chartData, setChartData] = useState<ChartData | null>(null);
 
   useEffect(() => {
     if (!orderbookData || orderbookData.length === 0) return;

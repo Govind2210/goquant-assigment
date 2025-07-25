@@ -46,6 +46,7 @@ const SpreadIndicator = ({ spreadLabels, spreadData }: SpreadIndicatorProps) => 
           color: "#6b7280",
         },
         grid: {
+          display: true,
           borderDash: [4, 4],
         },
       },

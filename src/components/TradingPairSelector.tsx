@@ -9,12 +9,6 @@ function TradingPairSelector({
 }: TradingPairSelectorProps) {
   return (
     <div className="mx-3">
-      {/* <label
-        htmlFor="pair-select"
-        className="block mb-1 text-sm font-semibold text-gray-700"
-      >
-        Select Trading Pair
-      </label> */}
       <select
         id="pair-select"
         value={selectedPair}
