@@ -4,12 +4,7 @@ import MarketDepthChart from "@/components/MarketDepthChart";
 import SpreadIndicator from "@/components/SpreadIndicator";
 import OrderbookDisplay from "@/components/OrderbookDisplay";
 import TradingPairSelector from "@/components/TradingPairSelector";
-
-// Define OrderbookSnapshot type for orderbookHistory state
-type OrderbookSnapshot = {
-  bids: [string, string][];
-  asks: [string, string][];
-};
+import { CalendarCell } from "@/components/CalendarCell";
 
 type OrderbookEntry = [string, string];
 
@@ -17,6 +12,20 @@ type OrderbookData = {
   bids: OrderbookEntry[];
   asks: OrderbookEntry[];
 };
+
+type OrderbookSnapshot = {
+  bids: OrderbookEntry[];
+  asks: OrderbookEntry[];
+};
+
+interface KlineData {
+  date: Date;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
 const dummyOrderbookData: OrderbookData = {
   // lastUpdateId: 5018335298,
@@ -42,10 +51,11 @@ const Home = () => {
   const [imbalance, setImbalance] = useState<number>(0);
   const [spreadData, setSpreadData] = useState<number[]>([]);
   const [spreadLabels, setSpreadLabels] = useState<string[]>([]);
-  // const [orderbookData, setOrderbookData] = useState<any[] | null>([]);
   const [selectedPair, setSelectedPair] = useState<string>("BTCUSDT");
-  const [orderbookHistory, setOrderbookHistory] = useState<OrderbookSnapshot[]>([]);
-
+  const [orderbookHistory, setOrderbookHistory] = useState<OrderbookSnapshot[]>(
+    []
+  );
+  const [klineData, setKlineData] = useState<KlineData[]>([]);
   // Fetch the orderbook data
   const fetchOrderbookHandler = async () => {
     const url = `https://api.binance.com/api/v3/depth?symbol=${selectedPair}&limit=10`;
@@ -83,6 +93,46 @@ const Home = () => {
       setAsks(asks);
       calculateImbalance(bids, asks);
       updateSpreadData(bids, asks);
+    }
+  };
+
+  const fetchKlineData = async () => {
+    const url = `https://api.binance.com/api/v3/klines?symbol=${selectedPair}&interval=1d&limit=90`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = await response.json();
+      type BinanceKline = [
+        number, // Open time
+        string, // Open
+        string, // High
+        string, // Low
+        string, // Close
+        string, // Volume
+        number, // Close time
+        string, // Quote asset volume
+        number, // Number of trades
+        string, // Taker buy base asset volume
+        string, // Taker buy quote asset volume
+        string // Ignore
+      ];
+
+      const formattedData = (data as BinanceKline[]).map((item) => ({
+        date: new Date(item[0]),
+        open: parseFloat(item[1]),
+        high: parseFloat(item[2]),
+        low: parseFloat(item[3]),
+        close: parseFloat(item[4]),
+        volume: parseFloat(item[5]),
+      }));
+
+      setKlineData(formattedData);
+    } catch (error) {
+      console.error("Error fetching kline data:", error);
+      // Fallback to mock data if needed
+      // setKlineData(generateMockKlineData());
     }
   };
 
@@ -126,22 +176,25 @@ const Home = () => {
     });
   };
 
-  // Effect to fetch orderbook data whenever selectedPair changes
   useEffect(() => {
-    // Fetch initial data for the selected pair
     fetchOrderbookHandler();
+    fetchKlineData();
 
-    // Set up interval to fetch data every second
-    const intervalId = setInterval(fetchOrderbookHandler, 1000);
+    const orderbookInterval = setInterval(fetchOrderbookHandler, 1000);
+    const klineInterval = setInterval(fetchKlineData, 60000); // Update every minute
 
-    // Clear interval on component unmount or when selectedPair changes
-    return () => clearInterval(intervalId);
-  }, [selectedPair]); // Re-run effect when selectedPair changes
+    return () => {
+      clearInterval(orderbookInterval);
+      clearInterval(klineInterval);
+    };
+  }, [selectedPair]);
 
   return (
     <div className="mx-6 my-2">
       <div className="w-full h-auto flex flex-col-2 justify-between mb-4 align-center mx-3 my-3 ">
-        <h2 className=" font-serif font-bold text-blue-700 text-xl mt-2">Order Book - {selectedPair}</h2>
+        <h2 className=" font-serif font-bold text-blue-700 text-xl mt-2">
+          Order Book - {selectedPair}
+        </h2>
         <TradingPairSelector
           selectedPair={selectedPair}
           setSelectedPair={setSelectedPair}
@@ -150,6 +203,10 @@ const Home = () => {
 
       <div className="mt-2">
         <OrderbookDisplay asks={asks} bids={bids} />
+      </div>
+
+      <div className="mt-2">
+        <CalendarCell klineData={klineData} selectedPair={selectedPair} />
       </div>
 
       <div className="mt-8">
@@ -169,8 +226,8 @@ const Home = () => {
         </p>
       </div>
 
-      <div className="my-4 mb-10" >
-         <MarketDepthChart orderbookData={orderbookHistory} />
+      <div className="my-4 mb-10">
+        <MarketDepthChart orderbookData={orderbookHistory} />
       </div>
     </div>
   );
