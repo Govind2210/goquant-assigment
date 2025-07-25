@@ -45,14 +45,7 @@ Navigate to the project directory and install the required dependencies:
   npm install
   ```
 
-### 4. Set Up Your API Key  
-You need a valid RapidAPI key to access external market data.
 
-Sign up for RapidAPI and get your API key.
-Once you have the key, create a .env.local file in the root of the project and add the following:
-```bash
-NEXT_PUBLIC_RAPID_API_KEY=<your-rapid-api-key>
-```
 
 ### 5. Start the Development Server
 To start the development server, run the following command:
@@ -67,4 +60,4 @@ npm run dev
 - **Tailwind CSS**: A utility-first CSS framework for building custom designs quickly.
 - **Chart.js**: A JavaScript charting library for creating interactive charts and graphs.
 - **Binance API**: Utilized for fetching cryptocurrency market data via RapidAPI.  
-  [Binance API on RapidAPI](https://rapidapi.com/Glavier/api/binance43)
+  [Binance API]
