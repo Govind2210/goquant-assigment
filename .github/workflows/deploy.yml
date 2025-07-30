@@ -1,0 +1,41 @@
+# This GitHub Actions workflow is named "Deploy to AWS"
+name: "Deploy to AWS"
+
+# This workflow can be triggered manually from the GitHub UI
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:  # The name of the job
+    runs-on: self-hosted  # Run this workflow on a self-hosted runner (your EC2 server)
+
+    steps:
+      # Step 1: Clone the repository onto the EC2 instance
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js version 20.17.0 on the server
+      # This ensures that the correct version of Node is used
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.17.0"
+
+      # Step 3: Install all npm dependencies listed in package.json
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the Next.js app
+      # This compiles your Next.js project for production
+      - name: Build the Next.js app
+        run: npm run build
+
+      # Step 5: Install PM2 globally
+      # PM2 is a process manager that keeps your app running in the background
+      - name: Install pm2 globally
+        run: npm install -g pm2
+
+      # Step 6: Start the app using PM2
+      # This runs the production server and names it "next-app" in PM2 for monitoring
+      - name: Start app with pm2
+        run: pm2 start npm --name "next-app" -- start
