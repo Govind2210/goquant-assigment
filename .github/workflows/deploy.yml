@@ -32,8 +32,8 @@ jobs:
 
       # Step 5: Install PM2 globally
       # PM2 is a process manager that keeps your app running in the background
-      - name: Install pm2 globally
-        run: npm install -g pm2
+      # - name: Install pm2 globally
+      #   run: npm install -g pm2
 
       # Step 6: Start the app using PM2
       # This runs the production server and names it "next-app" in PM2 for monitoring
