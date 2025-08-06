@@ -1,41 +1,50 @@
-# This GitHub Actions workflow is named "Deploy to AWS"
-name: "Deploy to AWS"
+name: "Deploy to AWS and Vercel"
 
-# This workflow can be triggered manually from the GitHub UI
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:  # The name of the job
-    runs-on: self-hosted  # Run this workflow on a self-hosted runner (your EC2 server)
+  deploy:
+    runs-on: self-hosted
 
     steps:
-      # Step 1: Clone the repository onto the EC2 instance
+      # Step 1: Checkout the GitHub repo on the EC2 runner
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js version 20.17.0 on the server
-      # This ensures that the correct version of Node is used
+      # Step 2: Setup Node.js (required for Next.js build)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20.17.0"
 
-      # Step 3: Install all npm dependencies listed in package.json
+      # Step 3: Install project dependencies
       - name: Install dependencies
         run: npm install
 
       # Step 4: Build the Next.js app
-      # This compiles your Next.js project for production
       - name: Build the Next.js app
         run: npm run build
 
-      # Step 5: Install PM2 globally
-      # PM2 is a process manager that keeps your app running in the background
-      # - name: Install pm2 globally
-      #   run: npm install -g pm2
+      # Step 5: Install PM2 (optional if using Vercel only)
+      - name: Install PM2 globally
+        run: npm install -g pm2
 
-      # Step 6: Start the app using PM2
-      # This runs the production server and names it "next-app" in PM2 for monitoring
-      - name: Start app with pm2
+      # Step 6: Start app locally (only for EC2 use — optional)
+      - name: Start app with PM2
         run: pm2 start npm --name "next-app" -- start
+
+      # Step 7: Install Vercel CLI
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # Step 8: Deploy to Vercel using token and IDs (non-interactive)
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          vercel build --prod --token=$VERCEL_TOKEN
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
